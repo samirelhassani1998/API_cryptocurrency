@@ -68,4 +68,3 @@ else:
     market_cap = coin_df.groupby('date_added')['market_cap'].sum()
     st.line_chart(market_cap)
     
-    # Comparison of the performance of
