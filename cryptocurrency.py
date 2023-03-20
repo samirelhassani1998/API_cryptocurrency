@@ -19,6 +19,9 @@ for crypto in cryptocurrencies:
         url = api_endpoint.format(crypto, fiat)
         response = requests.get(url, headers=headers)
         data = response.json()
+        print("Code d'état de la réponse :", response.status_code)
+        print("Texte de la réponse :", response.text)
+        print("Données JSON :", data)
         prices.append((crypto, fiat, data["rate"]))
 
 # Create a Streamlit app to display the prices
