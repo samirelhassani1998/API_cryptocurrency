@@ -1,5 +1,5 @@
-matplotlib
-pandas
-numpy
 streamlit
 requests
+pandas
+numpy
+matplotlib
