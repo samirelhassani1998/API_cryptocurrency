@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Set API endpoint and headers
-url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical"
 headers = {
     "Accepts": "application/json",
     "X-CMC_PRO_API_KEY": "c7271d78-54dd-4159-8409-6486b5f01e27"
@@ -13,8 +13,10 @@ headers = {
 
 # Set parameters for API request
 params = {
-    "start": "1",
-    "limit": "100", # Increase limit to get more data
+    "symbol": "BTC",
+    "time_start": "2022-01-01T00:00:00Z",
+    "time_end": "2022-12-31T23:59:59Z",
+    "interval": "daily",
     "convert": "USD"
 }
 
@@ -27,14 +29,13 @@ if response.status_code != 200:
 else:
     # Parse API response and extract relevant data
     data = response.json()["data"]
-    coin_df = pd.DataFrame(data) # Convert data to pandas DataFrame
-    coin_df = coin_df[['name', 'symbol', 'cmc_rank', 'date_added', 'total_supply', 'quote']]
-    coin_df = coin_df[coin_df['cmc_rank'] <= 100] # Filter out low ranked coins
-    coin_df['date_added'] = pd.to_datetime(coin_df['date_added']) # Convert date to datetime format
-    coin_df['market_cap'] = coin_df['quote'].apply(lambda x: x['USD']['market_cap']) # Extract market cap data
-    
+    coin_df = pd.DataFrame(data, columns=["timestamp", "open", "high", "low", "close", "volume", "market_cap"]) # Convert data to pandas DataFrame
+    coin_df['timestamp'] = pd.to_datetime(coin_df['timestamp'], format="%Y-%m-%dT%H:%M:%S.%fZ") # Convert timestamp to datetime format
+    coin_df.set_index('timestamp', inplace=True) # Set timestamp as index
+    coin_df = coin_df[['open', 'high', 'low', 'close', 'volume', 'market_cap']] # Select relevant columns
+
     # Time-series analysis of cryptocurrency prices over different time intervals (e.g., hourly, daily, weekly, monthly).
-    st.write("# Time-series Analysis of Cryptocurrency Prices")
+    st.write("# Time-series Analysis of BTC Prices in 2022")
     time_interval = st.selectbox("Select Time Interval", ["Hourly", "Daily", "Weekly", "Monthly"])
     if time_interval == "Hourly":
         freq = "H"
@@ -44,14 +45,12 @@ else:
         freq = "W"
     else:
         freq = "M"
-    coin_df.set_index('date_added', inplace=True)
-    grouped_df = coin_df.groupby('symbol')['market_cap'].resample(freq).mean().unstack()
-    st.line_chart(grouped_df)
+    grouped_df = coin_df.resample(freq).mean()
+    st.line_chart(grouped_df['close'])
     
     # Correlation analysis between different cryptocurrencies and/or their prices.
     st.write("# Correlation Analysis of Cryptocurrency Prices")
-    corr_df = coin_df.pivot_table(index='date_added', columns='symbol', values='market_cap')
-    corr = corr_df.corr()
+    corr = coin_df.corr()
     fig, ax = plt.subplots()
     cax = ax.imshow(corr, cmap='coolwarm')
     ax.set_xticks(np.arange(len(corr.columns)))
@@ -65,6 +64,5 @@ else:
     
     # Visualization of cryptocurrency market capitalization over time.
     st.write("# Market Capitalization Over Time")
-    market_cap = coin_df.groupby('date_added')['market_cap'].sum()
+    market_cap = coin_df['market_cap']
     st.line_chart(market_cap)
-  
