@@ -67,4 +67,4 @@ else:
     st.write("# Market Capitalization Over Time")
     market_cap = coin_df.groupby('date_added')['market_cap'].sum()
     st.line_chart(market_cap)
-   
+  
