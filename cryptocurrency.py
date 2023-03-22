@@ -10,7 +10,6 @@ headers = {
     "Accepts": "application/json",
     "X-CMC_PRO_API_KEY": "c7271d78-54dd-4159-8409-6486b5f01e27"
 }
-
 # Set parameters for API request
 params = {
     "symbol": "BTC",
