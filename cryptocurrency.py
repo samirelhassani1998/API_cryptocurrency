@@ -7,8 +7,13 @@ import datetime
 import matplotlib.pyplot as plt
 
 # Set API endpoint and headers
-url = "https://api.binance.com/api/v3/ticker/price"
-symbol = "BTCUSDT"
+url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+headers = {
+    "Accepts": "application/json",
+    "X-CMC_PRO_API_KEY": "c7271d78-54dd-4159-8409-6486b5f01e27"
+}
+symbol = "BTC"
+convert = "USD"
 
 # Time interval in seconds
 time_interval = 5
@@ -19,18 +24,18 @@ prices = []
 
 # Set up plot
 fig, ax = plt.subplots()
-ax.set_title("BTC/USDT Price")
+ax.set_title("BTC/USD Price")
 
 # Main program loop
 while True:
     # Make API request
-    params = {"symbol": symbol}
-    response = requests.get(url, params=params)
+    params = {"symbol": symbol, "convert": convert}
+    response = requests.get(url, headers=headers, params=params)
     if response.status_code != 200:
-        st.error("Failed to retrieve data from Binance API - check your API Key and try again.")
+        st.error("Failed to retrieve data from CoinMarketCap API - check your API Key and try again.")
         break
-    data = response.json()
-    price = float(data["price"])
+    data = response.json()["data"][symbol]["quote"][convert]
+    price = data["price"]
     timestamp = datetime.datetime.now()
     timestamps.append(timestamp)
     prices.append(price)
